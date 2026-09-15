@@ -3,282 +3,324 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Numéros Virtuels - Génération & Réception</title>
+  <title>Nova AI - Assistant Intelligent</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
     body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #0f0f1a;
+      background-image: radial-gradient(circle at 20% 20%, rgba(120,80,255,0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(0,200,255,0.1) 0%, transparent 50%);
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      display: flex; align-items: center; justify-content: center;
+      color: #e5e5e5;
     }
-    .container {
-      background: #fff;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      width: 100%;
-      max-width: 600px;
-      padding: 40px;
+    .app {
+      width: 100%; max-width: 900px; height: 100vh;
+      display: flex; flex-direction: column;
+      background: rgba(20, 20, 35, 0.7);
+      backdrop-filter: blur(20px);
+      border-left: 1px solid rgba(255,255,255,0.05);
+      border-right: 1px solid rgba(255,255,255,0.05);
     }
-    h1 {
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 28px;
+    @media (min-width: 920px) {
+      body { padding: 20px; }
+      .app { height: 90vh; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); overflow: hidden; }
     }
-    .subtitle {
-      color: #666;
-      margin-bottom: 30px;
-      font-size: 14px;
+    header {
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; gap: 12px;
     }
-    .btn {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: 14px 28px;
+    .logo {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, #a855f7, #06b6d4);
       border-radius: 10px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      width: 100%;
-      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 20px rgba(168,85,247,0.4);
     }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102,126,234,0.4); }
-    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-secondary {
-      background: #f0f0f0;
-      color: #333;
-      margin-top: 10px;
-    }
-    .btn-secondary:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-
-    .number-card {
-      background: #f8f9ff;
-      border: 2px solid #667eea;
-      border-radius: 15px;
-      padding: 25px;
-      margin: 20px 0;
-      text-align: center;
-      display: none;
-    }
-    .number-card.active { display: block; animation: fadeIn 0.4s; }
-    .number-label { color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
-    .number-value {
-      font-size: 32px;
-      font-weight: 700;
-      color: #667eea;
-      margin: 10px 0;
-      letter-spacing: 2px;
-    }
+    .title { font-size: 17px; font-weight: 700; }
+    .title span { color: #a855f7; }
     .status {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      background: #d4edda;
-      color: #155724;
+      margin-left: auto; display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: #4ade80;
     }
-
-    .codes-section {
-      margin-top: 25px;
-      display: none;
+    .dot {
+      width: 8px; height: 8px; background: #4ade80;
+      border-radius: 50%; box-shadow: 0 0 10px #4ade80;
+      animation: pulse 2s infinite;
     }
-    .codes-section.active { display: block; }
-    .codes-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    @keyframes pulse { 50% { opacity: 0.4; } }
+    .chat { flex: 1; overflow-y: auto; padding: 24px; scroll-behavior: smooth; }
+    .chat::-webkit-scrollbar { width: 6px; }
+    .chat::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.3); border-radius: 10px; }
+    .welcome { text-align: center; padding: 40px 20px; animation: fadeIn 0.6s; }
+    .welcome h2 {
+      font-size: 26px; margin-bottom: 10px;
+      background: linear-gradient(135deg, #a855f7, #06b6d4);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .refresh-btn {
-      background: none;
-      border: none;
-      color: #667eea;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
+    .welcome p { color: #888; font-size: 14px; margin-bottom: 30px; }
+    .suggestions {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px; max-width: 600px; margin: 0 auto;
     }
-    .code-item {
-      background: #fff;
-      border-left: 4px solid #667eea;
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      animation: slideIn 0.3s;
+    .suggestion {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 14px 16px; border-radius: 12px;
+      cursor: pointer; font-size: 13px; text-align: left;
+      color: #ccc; transition: all 0.2s;
     }
-    .code-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: #999;
-      margin-bottom: 8px;
+    .suggestion:hover {
+      background: rgba(168,85,247,0.1);
+      border-color: rgba(168,85,247,0.4);
+      transform: translateY(-2px);
     }
-    .code-sender { font-weight: 600; color: #667eea; }
-    .code-content {
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: 4px;
-      color: #333;
-      font-family: monospace;
+    .suggestion strong { color: #a855f7; display: block; margin-bottom: 4px; }
+    .message { display: flex; gap: 12px; margin-bottom: 20px; animation: slideIn 0.3s; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } }
+    @keyframes fadeIn { from { opacity: 0; } }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; flex-shrink: 0;
     }
-    .empty-state {
-      text-align: center;
-      padding: 30px;
-      color: #999;
-      font-size: 14px;
+    .avatar.user { background: linear-gradient(135deg, #3b82f6, #06b6d4); }
+    .avatar.ai   { background: linear-gradient(135deg, #a855f7, #ec4899); }
+    .bubble {
+      flex: 1; padding: 12px 16px; border-radius: 12px;
+      font-size: 15px; line-height: 1.6;
+      word-wrap: break-word; overflow-wrap: break-word;
     }
-    .loading {
-      text-align: center;
-      padding: 15px;
-      color: #667eea;
-      font-size: 14px;
+    .message.user .bubble {
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.25);
     }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-    .copy-btn {
-      background: #667eea;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 11px;
-      cursor: pointer;
-      margin-left: 10px;
+    .message.ai .bubble {
+      background: rgba(168,85,247,0.08);
+      border: 1px solid rgba(168,85,247,0.2);
     }
-    .auto-refresh {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: #666;
+    .bubble pre {
+      background: #0a0a14; padding: 12px; border-radius: 8px;
+      overflow-x: auto; margin: 8px 0; font-size: 13px;
+      border: 1px solid rgba(255,255,255,0.05);
     }
-    .pulse {
-      width: 8px; height: 8px;
-      background: #4caf50;
-      border-radius: 50%;
-      animation: pulse 1.5s infinite;
+    .bubble code {
+      font-family: 'Courier New', monospace; font-size: 13px;
+      background: rgba(168,85,247,0.15); padding: 2px 6px;
+      border-radius: 4px; color: #e9d5ff;
     }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.3); }
+    .bubble pre code { background: none; padding: 0; color: #e5e5e5; }
+    .bubble p { margin: 6px 0; }
+    .bubble ul, .bubble ol { margin: 8px 0 8px 20px; }
+    .bubble li { margin: 4px 0; }
+    .typing { display: inline-flex; gap: 4px; padding: 4px 0; }
+    .typing span {
+      width: 8px; height: 8px; background: #a855f7;
+      border-radius: 50%; animation: bounce 1.4s infinite;
     }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-6px); opacity: 1; }
+    }
+    .input-area {
+      padding: 16px 20px 20px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      background: rgba(15,15,26,0.6);
+    }
+    .input-wrap {
+      display: flex; gap: 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px; padding: 8px 8px 8px 16px;
+      transition: border-color 0.2s;
+    }
+    .input-wrap:focus-within { border-color: rgba(168,85,247,0.6); }
+    textarea {
+      flex: 1; background: none; border: none;
+      color: #e5e5e5; font-size: 15px; resize: none; outline: none;
+      max-height: 120px; padding: 8px 0; font-family: inherit;
+    }
+    textarea::placeholder { color: #666; }
+    .send-btn {
+      background: linear-gradient(135deg, #a855f7, #06b6d4);
+      border: none; width: 40px; height: 40px; border-radius: 10px;
+      color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.15s, opacity 0.2s; align-self: flex-end;
+    }
+    .send-btn:hover:not(:disabled) { transform: scale(1.05); }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .clear-btn {
+      background: none; border: 1px solid rgba(255,255,255,0.1);
+      color: #888; padding: 6px 12px; border-radius: 8px;
+      font-size: 12px; cursor: pointer; margin-left: 10px;
+    }
+    .clear-btn:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📱 Numéros Virtuels</h1>
-    <p class="subtitle">Générez un numéro virtuel et recevez les codes SMS</p>
-
-    <button class="btn" id="generateBtn">Générer un numéro virtuel</button>
-
-    <div class="number-card" id="numberCard">
-      <div class="number-label">Votre numéro virtuel</div>
-      <div class="number-value" id="numberValue">+33 6 00 00 00 00</div>
-      <span class="status">● Actif</span>
-      <button class="btn btn-secondary" id="copyNumberBtn" style="margin-top:15px;">📋 Copier le numéro</button>
-    </div>
-
-    <div class="codes-section" id="codesSection">
-      <div class="codes-title">
-        <span>📨 Codes reçus</span>
-        <div class="auto-refresh">
-          <span class="pulse"></span>
-          <button class="refresh-btn" id="refreshBtn">Actualiser</button>
+  <div class="app">
+    <header>
+      <div class="logo">✨</div>
+      <div><div class="title">Nova <span>AI</span></div></div>
+      <div class="status"><div class="dot"></div>En ligne</div>
+      <button class="clear-btn" id="clearBtn">Effacer</button>
+    </header>
+    <div class="chat" id="chat">
+      <div class="welcome" id="welcome">
+        <h2>Bonjour 👋</h2>
+        <p>Je suis Nova, votre assistant IA. Comment puis-je vous aider ?</p>
+        <div class="suggestions">
+          <div class="suggestion" data-prompt="Explique-moi la photosynthèse simplement.">
+            <strong>🌱 Science</strong>Explique-moi la photosynthèse simplement.
+          </div>
+          <div class="suggestion" data-prompt="Écris une fonction JavaScript qui inverse une chaîne.">
+            <strong>💻 Code</strong>Écris une fonction JavaScript qui inverse une chaîne.
+          </div>
+          <div class="suggestion" data-prompt="Donne-moi 3 idées de startup innovantes.">
+            <strong>🚀 Business</strong>Donne-moi 3 idées de startup innovantes.
+          </div>
+          <div class="suggestion" data-prompt="Raconte-moi une courte histoire drôle.">
+            <strong>🎭 Créatif</strong>Raconte-moi une courte histoire drôle.
+          </div>
         </div>
       </div>
-      <div id="codesList">
-        <div class="empty-state">Aucun code reçu pour le moment...</div>
+    </div>
+    <div class="input-area">
+      <div class="input-wrap">
+        <textarea id="input" placeholder="Écrivez votre message..." rows="1"></textarea>
+        <button class="send-btn" id="sendBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+          </svg>
+        </button>
       </div>
     </div>
   </div>
 
   <script>
-    let currentNumber = null;
-    let refreshInterval = null;
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('sendBtn');
+    const welcome = document.getElementById('welcome');
+    const clearBtn = document.getElementById('clearBtn');
 
-    const generateBtn = document.getElementById('generateBtn');
-    const numberCard = document.getElementById('numberCard');
-    const numberValue = document.getElementById('numberValue');
-    const codesSection = document.getElementById('codesSection');
-    const codesList = document.getElementById('codesList');
-    const refreshBtn = document.getElementById('refreshBtn');
-    const copyNumberBtn = document.getElementById('copyNumberBtn');
+    let history = [];
+    let isGenerating = false;
 
-    generateBtn.addEventListener('click', async () => {
-      generateBtn.disabled = true;
-      generateBtn.textContent = '⏳ Génération en cours...';
+    input.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+    });
+    sendBtn.addEventListener('click', send);
+    document.querySelectorAll('.suggestion').forEach(el => {
+      el.addEventListener('click', () => { input.value = el.dataset.prompt; send(); });
+    });
+    clearBtn.addEventListener('click', () => {
+      if (isGenerating) return;
+      history = [];
+      document.querySelectorAll('.message').forEach(m => m.remove());
+      welcome.style.display = 'block';
+    });
 
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    function renderMarkdown(text) {
+      let html = escapeHtml(text);
+      html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => `<pre><code>${code.trim()}</code></pre>`);
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+      html = html.replace(/^\s*[-*]\s+(.+)$/gm, '<li>$1</li>');
+      html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+      html = html.replace(/\n/g, '<br>');
+      return html;
+    }
+    function addMessage(role, content) {
+      welcome.style.display = 'none';
+      const msg = document.createElement('div');
+      msg.className = 'message ' + role;
+      msg.innerHTML = `
+        <div class="avatar ${role}">${role === 'user' ? '👤' : '✨'}</div>
+        <div class="bubble">${role === 'user' ? escapeHtml(content) : renderMarkdown(content)}</div>
+      `;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+      return msg.querySelector('.bubble');
+    }
+
+    async function send() {
+      const text = input.value.trim();
+      if (!text || isGenerating) return;
+      isGenerating = true;
+      sendBtn.disabled = true;
+      input.value = '';
+      input.style.height = 'auto';
+
+      addMessage('user', text);
+      history.push({ role: 'user', content: text });
+
+      const bubble = addMessage('ai', '');
+      bubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+
+      let fullText = '';
       try {
-        const res = await fetch('/api/numbers', {
+        const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'generate' })
+          body: JSON.stringify({ messages: history })
         });
-        const data = await res.json();
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || ('Erreur API: ' + res.status));
+        }
 
-        currentNumber = data.number;
-        numberValue.textContent = data.number;
-        numberCard.classList.add('active');
-        codesSection.classList.add('active');
-        generateBtn.textContent = '🔄 Générer un nouveau numéro';
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let firstChunk = true;
 
-        await loadCodes();
-        startAutoRefresh();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6).trim();
+            if (data === '[DONE]') continue;
+            try {
+              const json = JSON.parse(data);
+              const delta = json.choices?.[0]?.delta?.content || '';
+              if (delta) {
+                if (firstChunk) { bubble.innerHTML = ''; firstChunk = false; }
+                fullText += delta;
+                bubble.innerHTML = renderMarkdown(fullText);
+                chat.scrollTop = chat.scrollHeight;
+              }
+            } catch {}
+          }
+        }
+        if (!fullText) bubble.innerHTML = '<em style="color:#888">Aucune réponse reçue.</em>';
+        else history.push({ role: 'assistant', content: fullText });
       } catch (err) {
-        alert('Erreur : ' + err.message);
-        generateBtn.textContent = 'Générer un numéro virtuel';
+        bubble.innerHTML = `<span style="color:#f87171">❌ ${escapeHtml(err.message)}</span>`;
       }
-      generateBtn.disabled = false;
-    });
-
-    copyNumberBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(currentNumber);
-      copyNumberBtn.textContent = '✅ Copié !';
-      setTimeout(() => copyNumberBtn.textContent = '📋 Copier le numéro', 1500);
-    });
-
-    refreshBtn.addEventListener('click', loadCodes);
-
-    async function loadCodes() {
-      if (!currentNumber) return;
-      try {
-        const res = await fetch(`/api/numbers?number=${encodeURIComponent(currentNumber)}`);
-        const data = await res.json();
-        renderCodes(data.codes || []);
-      } catch (err) {
-        console.error(err);
-      }
+      isGenerating = false;
+      sendBtn.disabled = false;
+      input.focus();
     }
-
-    function renderCodes(codes) {
-      if (!codes.length) {
-        codesList.innerHTML = '<div class="empty-state">Aucun code reçu pour le moment...</div>';
-        return;
-      }
-      codesList.innerHTML = codes.map(c => `
-        <div class="code-item">
-          <div class="code-header">
-            <span class="code-sender">${c.sender || 'Inconnu'}</span>
-            <span>${new Date(c.timestamp).toLocaleString('fr-FR')}</span>
-          </div>
-          <div class="code-content">
-            ${c.code}
-            <button class="copy-btn" onclick="navigator.clipboard.writeText('${c.code}')">Copier</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function startAutoRefresh() {
-      if (refreshInterval) clearInterval(refreshInterval);
-      refreshInterval = setInterval(loadCodes, 5000);
-    }
+    input.focus();
   </script>
 </body>
 </html>
