@@ -103,3 +103,14 @@ function simulateIncomingCodes(number) {
     }, delay);
   });
                     }
+// Dans api/numbers.js, ajoutez :
+if (action === 'twilio-webhook' && req.body.From && req.body.Body) {
+  const code = req.body.Body.match(/\d{4,6}/)?.[0];
+  if (code) {
+    globalStore.codes[req.body.To]?.push({
+      code,
+      sender: req.body.From,
+      timestamp: Date.now()
+    });
+  }
+                    }
